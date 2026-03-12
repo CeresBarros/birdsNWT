@@ -20,7 +20,7 @@ defineModule(sim, list(
   reqdPkgs = list("googledrive", "magrittr", "data.table", "gbm",
                   "SpaDES.core", "reproducible", "terra",
                   "PredictiveEcology/usefulFuns@birdResilienceMS (HEAD)", ## TODO: add pemisc for cluster fns
-                  "future", "future.apply", "tictoc"), # "raster", "plyr", "dplyr", "crayon",
+                  "future", "future.apply", "tictoc", "qs"), # "raster", "plyr", "dplyr", "crayon",
   parameters = rbind(
     defineParameter("scenario", "character", NA, NA, NA,
                     paste("Are these predictions from a specific scenario?",
