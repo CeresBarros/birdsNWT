@@ -517,13 +517,14 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
   }
 
   if (!suppliedElsewhere("rasterToMatch", sim = sim, where = "sim")) {
-    sim$rasterToMatch <- Cache(prepInputs, url = "https://drive.google.com/open?id=1fo08FMACr_aTV03lteQ7KsaoN9xGx1Df",
+    sim$rasterToMatch <- Cache(prepInputs,
                                # url = "https://drive.google.com/open?id=1fo08FMACr_aTV03lteQ7KsaoN9xGx1Df",
                                url = "https://drive.google.com/open?id=10hnvjk8k9wYGgyZ7dBp7JvxKY0mblI4R",  ## new location in BAM-owned folder
+                               archive = NA,
                                studyArea = sim$studyArea,
                                targetFile = "RTM.tif", mod$dPath,
-                               filename2 = NULL,
-                               omitArgs = c("destinationPath", "filename2"))
+                               overwrite = TRUE,
+                               omitArgs = c("destinationPath", "writeTo"))
   }
 
   if (!suppliedElsewhere("rstLCC", sim)) {
