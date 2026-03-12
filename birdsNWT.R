@@ -150,7 +150,8 @@ defineModule(sim, list(
     # V4 Bird Models (Veg+Terrain): "https://drive.google.com/open?id=17RhA0KkmAJPpf4qss65I0F1wC77XmhzE"
     # V5 Bird Models: (Clim+Terrain)"https://drive.google.com/open?id=1HLcPg2SCtembYvKFTAXl1M2cj7hYPshg"
     # V6 Bird Models (Veg+Clim+Terrain): "https://drive.google.com/open?id=1DD2lfSsVEOfHoob3fKaTvqOjwVG0ZByQ"
-    # V8 Bird Models (Veg+Clim+Terrain+Landscape): "https://drive.google.com/drive/u/0/folders/1AoScxKtKrVbStk9LldXGGjna9f9iBbfd"
+    # V8 Bird Models (Veg+Clim+Terrain+Landscape): "https://drive.google.com/drive/u/0/folders/1AoScxKtKrVbStk9LldXGGjna9f9iBbfd" - V8 models no longer here
+    # V8 Bird Models (Veg+Clim+Terrain+Landscape) (New location): "https://drive.google.com/drive/u/0/folders/1Xldbvtx-xD6tFuLD6wN1AdCejA7TdVVJ" - V8 models no longer here
     # BAM's reduced WBI: https://drive.google.com/drive/folders/1-lxvHbgTPKtvjlovsAatQsZi50Xixo1H
     expectsInput(objectName = "urlStaticLayers", objectClass = "RasterLayer",
                  desc = "Static Layers (WET, VRUG, WAT, URBAG, lLED25, DEV25 and landform) url",
@@ -460,7 +461,9 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
               sim$urlModels <- "https://drive.google.com/open?id=1DD2lfSsVEOfHoob3fKaTvqOjwVG0ZByQ"
             } else {
               if (P(sim)$version == "8") {
-                sim$urlModels <- "https://drive.google.com/open?id=1AoScxKtKrVbStk9LldXGGjna9f9iBbfd"
+                # sim$urlModels <- "https://drive.google.com/open?id=1AoScxKtKrVbStk9LldXGGjna9f9iBbfd"
+                ## new location (BAM-owned GDrive):
+                sim$urlModels <- "https://drive.google.com/drive/u/0/folders/1Xldbvtx-xD6tFuLD6wN1AdCejA7TdVVJ"
               } else {
                 stop(paste0("No urlModels were provided for model V", P(sim)$version))
               }
@@ -497,6 +500,8 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
 
   if (!suppliedElsewhere("rasterToMatch", sim = sim, where = "sim")) {
     sim$rasterToMatch <- Cache(prepInputs, url = "https://drive.google.com/open?id=1fo08FMACr_aTV03lteQ7KsaoN9xGx1Df",
+                               # url = "https://drive.google.com/open?id=1fo08FMACr_aTV03lteQ7KsaoN9xGx1Df",
+                               url = "https://drive.google.com/open?id=10hnvjk8k9wYGgyZ7dBp7JvxKY0mblI4R",  ## new location in BAM-owned folder
                                studyArea = sim$studyArea,
                                targetFile = "RTM.tif", mod$dPath,
                                filename2 = NULL,
@@ -539,6 +544,7 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
   }
   if (!suppliedElsewhere("waterRaster", sim)) {
     wetlandRaster <- Cache(prepInputsLayers_DUCKS, destinationPath = mod$dPath,
+                           url = "https://drive.google.com/open?id=1ynx-QLU_EB0-_99gff4InSDYYdlq7kEj",  ## new location in BAM GDrive folder
                            studyArea = sim$studyArea,
                            userTags = "objectName:wetlandRaster")
     sim$waterRaster <- Cache(usefulFuns::classifyWetlands, LCC = P(sim)$baseLayer,
