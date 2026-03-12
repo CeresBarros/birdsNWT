@@ -557,7 +557,7 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
     sim$uplandsRaster <- raster::setValues(sim$uplandsRaster, uplandVals)
   }
 
-  if (extent(sim$uplandsRaster) != extent(sim$studyArea)) {
+  if (ext(sim$uplandsRaster) != ext(sim$studyArea)) {
     sim$uplandsRaster <- postProcess(x = sim$uplandsRaster, studyArea = sim$studyArea,
                                      destinationFolder = mod$dPath, filename2 = NULL)
   }
@@ -573,9 +573,9 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
                              studyArea = sim$studyArea,
                              rasterToMatch = sim$rasterToMatch,
                              userTags = c("objectName:wetLCC"))
-    waterVals <- raster::getValues(sim$waterRaster) # Uplands = 3, Water = 1, Wetlands = 2, so 2 and 3 to NA
+    waterVals <- values2(sim$waterRaster) # Uplands = 3, Water = 1, Wetlands = 2, so 2 and 3 to NA
     waterVals[!is.na(waterVals) & waterVals != 1] <- 0
-    sim$waterRaster <- raster::setValues(sim$waterRaster, waterVals)
+    values(sim$waterRaster) <- waterVals
   }
   if (!suppliedElsewhere("urlStaticLayers", sim)) {
     if (P(sim)$version == "2") { # Static Layers: WAT, URBAG, lLED25, DEV25 and landform
