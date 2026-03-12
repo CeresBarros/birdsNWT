@@ -258,7 +258,8 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
                                 pathData = mod$dPath,
                                 studyArea = sim$studyArea,
                                 rasterToMatch = sim$rasterToMatch,
-                                Province = strsplit(P(sim)$scenario, split = "_")[[1]][1],
+                                # Province = strsplit(P(sim)$scenario, split = "_")[[1]][1],
+                                Province = "NT", ## Ceres: workaround
                                 version = P(sim)$version,
                                 allVariables = sim$allVariables,
                                 staticLayersNames = P(sim)$staticLayersNames,
@@ -350,7 +351,8 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
           version = P(sim)$version,
           urlStaticLayers = sim$urlStaticLayers,
           studyArea = sim$studyArea,
-          Province = strsplit(P(sim)$scenario, split = "_")[[1]][1]
+          # Province = strsplit(P(sim)$scenario, split = "_")[[1]][1]
+          Province = "NT"
         )
       }
       if (P(sim)$version %in% c("5", "6", "6a", "8", "reducedBAM")) {
