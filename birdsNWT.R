@@ -228,10 +228,12 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
       if (!P(sim)$onlyLoadModels) {
         sim <- scheduleEvent(sim, start(sim), "birdsNWT", "loadFixedLayers")
         sim <- scheduleEvent(sim, start(sim), "birdsNWT", "gettingData")
+        sim <- scheduleEvent(sim, start(sim), "birdsNWT", "prepPredictors")
         sim <- scheduleEvent(sim, start(sim), "birdsNWT", "predictBirds", eventPriority = 9)
       }
     },
     loadModels = {
+      browser()
       sim$birdModels <- loadBirdModels(birdsList = sim$birdsList,
                                        folderUrl = sim$urlModels,
                                        pathData = mod$dPath,
@@ -311,7 +313,7 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
           sim <- scheduleEvent(sim, end(sim), "birdsNWT", "gettingData")
       }
     },
-    predictBirds = {
+    prepPredictors = {
       if (P(sim)$useTestSpeciesLayers == TRUE) {
         message("Using test layers for species. Predictions will be static and identical to original data.")
         sim$successionLayers <- Cache(prepInputStack,
@@ -410,6 +412,13 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
           sim$successionLayers <- raster::stack(sim$successionLayers, sim$climateLayersBirds)
         })
       }
+      sim <- scheduleEvent(sim, time(sim) + P(sim)$predictionInterval, "birdsNWT", "prepPredictors")
+      if (P(sim)$predictLastYear) {
+        if (all(time(sim) == start(sim), (end(sim) - start(sim)) != 0))
+          sim <- scheduleEvent(sim, end(sim), "birdsNWT", "prepPredictors")
+      }
+    },
+    predictBirds = {
       t1 <- Sys.time()
       sim$birdPrediction[[paste0("Year", time(sim))]] <- predictDensities(
         birdSpecies = sim$birdsList,
