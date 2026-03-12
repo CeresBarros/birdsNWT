@@ -559,7 +559,8 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
 
   if (ext(sim$uplandsRaster) != ext(sim$studyArea)) {
     sim$uplandsRaster <- postProcess(x = sim$uplandsRaster, studyArea = sim$studyArea,
-                                     destinationFolder = mod$dPath, filename2 = NULL)
+                                     destinationFolder = mod$dPath, filename2 = NULL) |>
+      Cache()
   }
   if (!suppliedElsewhere("waterRaster", sim)) {
     wetlandRaster <- Cache(prepInputsLayers_DUCKS,
