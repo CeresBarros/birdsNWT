@@ -90,7 +90,8 @@ loadStaticLayers <- function(fileURL,
   stkPre <- reproducible::preProcess(url = fileURL,
                        alsoExtract = "similar",
                        destinationPath = pathData,
-                       omitArgs = c("useCache", "purge"))
+                                       omitArgs = c("useCache", "purge")) |>
+      Cache()
   stk <- raster::stack(stkPre$targetFilePath) # This file has all species too. Exclude those.
   stkNames <- unlist(lapply(X = 1:length(stk@layers), FUN = function(layers){
     lay <- stk@layers[[layers]]@data@names
