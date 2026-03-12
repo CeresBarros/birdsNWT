@@ -253,6 +253,8 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
         # weight
         sim$allVariables <- unique(unlist(lapply(names(sim$birdModels), function(birds) sim$birdModels[[birds]][["RES"]][["vars"]])))
       }
+      browser()
+
       sim$staticLayers <- Cache(loadStaticLayers,
                                 fileURL = sim$urlStaticLayers, # Add Cache when fun is ready
                                 pathData = mod$dPath,
@@ -269,6 +271,7 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
               paste(names(sim$staticLayers), collapse = ", ")))
     },
     gettingData = {
+      browser()
       if (P(sim)$vegetationStatic) {
         timeVegetation <- start(sim)
         message(crayon::red("vegetationStatic is TRUE. Vegetation layers will be kept Static"))
@@ -280,9 +283,9 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
         mod$cohortData <- sim$cohortData
       } else {
         mod$cohortData <- createModObjectBirds(data = "cohortData", sim = sim,
-                                          pathInput = inputPath(sim),
-                                          currentTime = timeVegetation,
-                                          fun = qread)
+                                               pathInput = inputPath(sim),
+                                               currentTime = timeVegetation,
+                                               fun = qread)
       }
 
       if (!is.null(sim$pixelGroupMap)) {
@@ -315,6 +318,7 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
       }
     },
     prepPredictors = {
+      browser()
       if (P(sim)$useTestSpeciesLayers == TRUE) {
         message("Using test layers for species. Predictions will be static and identical to original data.")
         sim$successionLayers <- Cache(prepInputStack,
