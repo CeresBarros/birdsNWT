@@ -562,11 +562,12 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
                                      destinationFolder = mod$dPath, filename2 = NULL)
   }
   if (!suppliedElsewhere("waterRaster", sim)) {
-    wetlandRaster <- Cache(prepInputsLayers_DUCKS, destinationPath = mod$dPath,
+    wetlandRaster <- Cache(prepInputsLayers_DUCKS,
                            url = "https://drive.google.com/open?id=1ynx-QLU_EB0-_99gff4InSDYYdlq7kEj",  ## new location in BAM GDrive folder
+                           destinationPath = mod$dPath,
                            studyArea = sim$studyArea,
                            userTags = "objectName:wetlandRaster")
-    sim$waterRaster <- Cache(usefulFuns::classifyWetlands, LCC = P(sim)$baseLayer,
+    sim$waterRaster <- Cache(classifyWetlands, LCC = P(sim)$baseLayer,
                              wetLayerInput = wetlandRaster,
                              pathData = mod$dPath,
                              studyArea = sim$studyArea,
