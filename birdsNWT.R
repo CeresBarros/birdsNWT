@@ -572,7 +572,7 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
                              wetLayerInput = wetlandRaster,
                              pathData = mod$dPath,
                              studyArea = sim$studyArea,
-                             rasterToMatch = sim$rasterToMatch,
+                             RasterToMatch = sim$rasterToMatch,
                              userTags = c("objectName:wetLCC"))
     waterVals <- values2(sim$waterRaster) # Uplands = 3, Water = 1, Wetlands = 2, so 2 and 3 to NA
     waterVals[!is.na(waterVals) & waterVals != 1] <- 0
