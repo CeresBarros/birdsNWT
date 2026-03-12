@@ -18,7 +18,7 @@ defineModule(sim, list(
   citation = list("citation.bib"),
   documentation = list("README.txt", "birdsNWT.Rmd"),
   reqdPkgs = list("googledrive", "magrittr", "data.table", "gbm",
-                  "tati-micheletti/usefulFuns@development", ## TODO: add pemisc for cluster fns
+                  "SpaDES.core", "reproducible", "terra",
                   "future", "future.apply", "tictoc"), # "raster", "plyr", "dplyr", "crayon",
   parameters = rbind(
     defineParameter("scenario", "character", NA, NA, NA,
