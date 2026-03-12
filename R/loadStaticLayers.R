@@ -34,83 +34,84 @@ loadStaticLayers <- function(fileURL,
       }
     })
     filesToLoad <- allFiles$name[grepl(allFiles$name, pattern = "grd")]
-  allLays <- lapply(filesToLoad, function(lay){
-    allVariables <- dots[["allVariables"]]
-    # Reduce to exclusive static layers available
-    allVariables <- staticLayersNames[staticLayersNames %in% allVariables]
+    allLays <- lapply(filesToLoad, function(lay){
+      allVariables <- dots[["allVariables"]]
+      # Reduce to exclusive static layers available
+      allVariables <- staticLayersNames[staticLayersNames %in% allVariables]
 
-    # Select the static layers available
-    ras <- stack(file.path(pathData, lay))
-    laysToKeep <- which(names(ras) %in% allVariables)
-    rasRed <- raster::subset(x = ras, subset = laysToKeep, drop = TRUE)
-    stkPre <- Cache(reproducible::postProcess, x = rasRed,
-                                       studyArea = studyArea,
-                                       rasterToMatch = rasterToMatch,
-                                       destinationPath = pathData)
-  })
-  # Rearrange the layers so that each variable becomes a raster stack
-  # Subset matching tiles
-  lengthVector <- 1:nlayers(allLays[[1]])
-  orderedRasterList <- lapply(X = lengthVector, FUN = function(index){
-    sbset <- unlist(lapply(allLays, `[[`, index), use.names = FALSE)
-    return(sbset)
-  })
-  names(orderedRasterList) <- names(allLays[[1]])
+      # Select the static layers available
+      ras <- stack(file.path(pathData, lay))
+      laysToKeep <- which(names(ras) %in% allVariables)
+      rasRed <- raster::subset(x = ras, subset = laysToKeep, drop = TRUE)
+      stkPre <- Cache(reproducible::postProcess, x = rasRed,
+                      studyArea = studyArea,
+                      rasterToMatch = rasterToMatch,
+                      destinationPath = pathData)
+    })
+    # Rearrange the layers so that each variable becomes a raster stack
+    # Subset matching tiles
+    lengthVector <- 1:nlayers(allLays[[1]])
+    orderedRasterList <- lapply(X = lengthVector, FUN = function(index){
+      sbset <- unlist(lapply(allLays, `[[`, index), use.names = FALSE)
+      return(sbset)
+    })
+    names(orderedRasterList) <- names(allLays[[1]])
 
-  # Once I have all stacks, I need to mosaic, then postProcess
-  postProcessedLays <- lapply(names(allLays[[1]]), function(nameLay){
-    stk <- orderedRasterList[[nameLay]]
-    if (length(stk) == 3){ # TODO: Make this horrible code better. Couldn't make it work with do.call()
-      rasCombined <- raster::mosaic(stk[[1]], stk[[2]], stk[[3]], fun = "max")
-    } else rasCombined <- stk[[1]]
-    return(rasCombined)
-  })
+    # Once I have all stacks, I need to mosaic, then postProcess
+    postProcessedLays <- lapply(names(allLays[[1]]), function(nameLay){
+      stk <- orderedRasterList[[nameLay]]
+      if (length(stk) == 3){ # TODO: Make this horrible code better. Couldn't make it work with do.call()
+        rasCombined <- raster::mosaic(stk[[1]], stk[[2]], stk[[3]], fun = "max")
+      } else rasCombined <- stk[[1]]
+      return(rasCombined)
+    })
 
-  names(postProcessedLays) <- names(allLays[[1]])
-  staticLayers <- raster::stack(postProcessedLays)
+    names(postProcessedLays) <- names(allLays[[1]])
+    staticLayers <- raster::stack(postProcessedLays)
 
-  # Browse[1]> postProcessedLays
-  # $Structure_Biomass_TotalLiveAboveGround_v1
-  # $Structure_Biomass_TotalLiveAboveGround_v1[[1]]
-  # class      : RasterLayer
-  # dimensions : 4900, 2891, 14165900  (nrow, ncol, ncell)
-  # resolution : 250, 250  (x, y)
-  # extent     : -2222000, -1499250, 8136500, 9361500  (xmin, xmax, ymin, ymax)
-  # crs        : +proj=lcc +lat_0=0 +lon_0=-95 +lat_1=49 +lat_2=77 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs
-  # source     : memory
-  # names      : Structure_Biomass_TotalLiveAboveGround_v1
-  # values     : 0, 159.8483  (min, max)
-  #
-  # Browse[1]>   staticLayers <- raster::stack(postProcessedLays)
-  # Error in .local(x, ...) : list has no "x"
-  # Browse[1]>
+    # Browse[1]> postProcessedLays
+    # $Structure_Biomass_TotalLiveAboveGround_v1
+    # $Structure_Biomass_TotalLiveAboveGround_v1[[1]]
+    # class      : RasterLayer
+    # dimensions : 4900, 2891, 14165900  (nrow, ncol, ncell)
+    # resolution : 250, 250  (x, y)
+    # extent     : -2222000, -1499250, 8136500, 9361500  (xmin, xmax, ymin, ymax)
+    # crs        : +proj=lcc +lat_0=0 +lon_0=-95 +lat_1=49 +lat_2=77 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs
+    # source     : memory
+    # names      : Structure_Biomass_TotalLiveAboveGround_v1
+    # values     : 0, 159.8483  (min, max)
+    #
+    # Browse[1]>   staticLayers <- raster::stack(postProcessedLays)
+    # Error in .local(x, ...) : list has no "x"
+    # Browse[1]>
 
   } else {
 
-  stkPre <- reproducible::preProcess(url = fileURL,
-                       alsoExtract = "similar",
-                       destinationPath = pathData,
+    stkPre <- reproducible::preProcess(url = fileURL,
+                                       alsoExtract = "similar",
+                                       destinationPath = pathData,
                                        omitArgs = c("useCache", "purge")) |>
       Cache()
-  stk <- raster::stack(stkPre$targetFilePath) # This file has all species too. Exclude those.
-  stkNames <- unlist(lapply(X = 1:length(stk@layers), FUN = function(layers){
-    lay <- stk@layers[[layers]]@data@names
-    return(lay)
-  }))
-  spLayers <- c("Species", "Structure")
-  fixedLayers <- stkNames[!grepl(pattern = paste(spLayers, collapse = "|"),
-                                 x = stkNames)]
+    browser() ### here, need to terrarize
+    stk <- raster::stack(stkPre$targetFilePath) # This file has all species too. Exclude those.
+    stkNames <- unlist(lapply(X = 1:length(stk@layers), FUN = function(layers){
+      lay <- stk@layers[[layers]]@data@names
+      return(lay)
+    }))
+    spLayers <- c("Species", "Structure")
+    fixedLayers <- stkNames[!grepl(pattern = paste(spLayers, collapse = "|"),
+                                   x = stkNames)]
 
-  subStaticLayers <- raster::subset(x = stk, subset = fixedLayers)
-  staticLayers <- lapply(X = seq_len(nlayers(subStaticLayers)), FUN = function(layer){
-    lay <- postProcess(subStaticLayers[[layer]], studyArea = studyArea,
-                       rasterToMatch = rasterToMatch, destinationPath = pathData,
-                       useCache = useCacheInternals, omitArgs = c("purge", "useCache"),
-                       filename2 = NULL)
-    return(lay)
-  })
-  staticLayers <- raster::stack(staticLayers)
-  names(staticLayers) <- fixedLayers # Maybe just passing the names to the stack would do the trick
+    subStaticLayers <- raster::subset(x = stk, subset = fixedLayers)
+    staticLayers <- lapply(X = seq_len(nlayers(subStaticLayers)), FUN = function(layer){
+      lay <- postProcess(subStaticLayers[[layer]], studyArea = studyArea,
+                         rasterToMatch = rasterToMatch, destinationPath = pathData,
+                         useCache = useCacheInternals, omitArgs = c("purge", "useCache"),
+                         filename2 = NULL)
+      return(lay)
+    })
+    staticLayers <- raster::stack(staticLayers)
+    names(staticLayers) <- fixedLayers # Maybe just passing the names to the stack would do the trick
   }
   return(staticLayers)
 }
