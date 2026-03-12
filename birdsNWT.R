@@ -17,7 +17,8 @@ defineModule(sim, list(
   timeunit = "year",
   citation = list("citation.bib"),
   documentation = list("README.txt", "birdsNWT.Rmd"),
-  reqdPkgs = list("googledrive", "magrittr", "data.table", "gbm",
+  reqdPkgs = list("archive", ## for large zip files
+   "googledrive", "magrittr", "data.table", "gbm",
                   "SpaDES.core", "reproducible", "terra",
                   "PredictiveEcology/usefulFuns@birdResilienceMS (HEAD)", ## TODO: add pemisc for cluster fns
                   "future", "future.apply", "tictoc", "qs"), # "raster", "plyr", "dplyr", "crayon",
