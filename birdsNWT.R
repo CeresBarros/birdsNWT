@@ -18,8 +18,8 @@ defineModule(sim, list(
   citation = list("citation.bib"),
   documentation = list("README.txt", "birdsNWT.Rmd"),
   reqdPkgs = list("archive", ## for large zip files
-   "googledrive", "magrittr", "data.table", "gbm",
-                  "SpaDES.core", "reproducible", "terra",
+                  "googledrive", "magrittr", "data.table", "gbm",
+                  "SpaDES.core", "reproducible (>= 3.0.0.9001)", "terra",
                   "PredictiveEcology/usefulFuns@birdResilienceMS (HEAD)", ## TODO: add pemisc for cluster fns
                   "future", "future.apply", "tictoc", "qs"), # "raster", "plyr", "dplyr", "crayon",
   parameters = rbind(
