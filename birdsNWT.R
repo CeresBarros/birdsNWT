@@ -518,11 +518,13 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
                            pattern = paste0("brt", P(sim)$version, ".R"))
       substrBoth(strng = birdsOut[["name"]], howManyCharacters = 4, fromEnd = FALSE)
     }, error = function(e) {
-      ## Ceres: work around while sim$urlModels is not accessible
-      birdsOut <- list.files("D:/.shortcut-targets-by-id/1WUI0fgCv1dFstpN2jom3gb1GIYRATV9r/NWT-cc-fire/Models/BirdModelsv8vegclimterrainlandscape",
-                 pattern = paste0("brt", P(sim)$version, ".R"))
-      substrBoth(strng = birdsOut, howManyCharacters = 4, fromEnd = FALSE)
-      })
+      ## Ceres: work around for sim$urlModels in shared drive
+      birdsOut <- drive_ls(path = as_id(sim$urlModels),
+                           pattern = paste0("brt", P(sim)$version, ".R"), ## to make sure only projection file names are listed
+                           shared_drive = as_shared_drive(as_id("0ABSERKnd1o3sUk9PVA")))
+      substrBoth(strng = birdsOut[["name"]], howManyCharacters = 4, fromEnd = FALSE)
+    })
+
 
     # sim$birdsList <- sim$birdsList[-which(grepl(pattern = "CONW", x = sim$birdsList))] # CONW Model has some sort of problem in V3; Check V6!
     if (all(is.null(sim$birdsList)))
