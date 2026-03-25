@@ -549,15 +549,18 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
                                url = "https://drive.google.com/open?id=10hnvjk8k9wYGgyZ7dBp7JvxKY0mblI4R",  ## new location in BAM-owned folder
                                archive = NA,
                                studyArea = sim$studyArea,
-                               targetFile = "RTM.tif", mod$dPath,
+                               targetFile = "RTM.tif",
+                               destinationPath = mod$dPath,
                                overwrite = TRUE,
                                omitArgs = c("destinationPath", "writeTo"))
   }
 
   if (!suppliedElsewhere("rstLCC", sim)) {
-    sim$rstLCC <- LandR::prepInputsLCC(destinationPath = mod$dPath,
-                                       studyArea = sim$studyArea,
-                                       rasterToMatch = sim$rasterToMatch)
+    sim$rstLCC <- Cache(LandR::prepInputsLCC,
+                        destinationPath = mod$dPath,
+                        studyArea = sim$studyArea,
+                        rasterToMatch = sim$rasterToMatch,
+                        omitArgs = c("destinationPath"))
   }
 
   if (!suppliedElsewhere("forestOnly", sim = sim, where = "sim")) {
@@ -585,9 +588,11 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
   }
 
   if (ext(sim$uplandsRaster) != ext(sim$studyArea)) {
-    sim$uplandsRaster <- postProcess(x = sim$uplandsRaster, studyArea = sim$studyArea,
-                                     destinationFolder = mod$dPath, filename2 = NULL) |>
-      Cache()
+    sim$uplandsRaster <- Cache(postProcess,
+                               x = sim$uplandsRaster,
+                               studyArea = sim$studyArea,
+                               destinationFolder = mod$dPath,
+                               filename2 = NULL)
   }
   if (!suppliedElsewhere("waterRaster", sim)) {
     wetlandRaster <- Cache(prepInputsLayers_DUCKS,
