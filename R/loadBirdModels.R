@@ -6,8 +6,14 @@ loadBirdModels <- function(birdsList,
   modelsPath <- checkPath(file.path(pathData, "models"), create = TRUE)
   if (version != "reducedBAM") {
     allModels <- lapply(X = birdsList, FUN = function(bird) {
-      modAvailable <- grepMulti(x = list.files(modelsPath, full.names = TRUE),
+      modFiles <- list.files(modelsPath, full.names = TRUE)
+      if (length(modFiles)) {
+      modAvailable <- grepMulti(x = modFiles,
                                 patterns = c(bird, version))
+      } else {
+        modAvailable <- character(0)
+      }
+
       if (length(modAvailable) == 0) {
         # If model is not available, download and return path
         message(paste0("Model for ", bird,
@@ -16,7 +22,8 @@ loadBirdModels <- function(birdsList,
                                                version = version,
                                                birdsList = bird,
                                                modelsPath = modelsPath,
-                                               returnPath = TRUE)
+                                               returnPath = TRUE) |>
+          Cache()
         return(downloadedModels[[1]])
       } else {
         # If model is available, return the path
@@ -57,7 +64,20 @@ loadBirdModels <- function(birdsList,
     if (version == "reducedBAM") {
       return(qs::qread(file.path(modelsPath, modelFile)))
     } else {
-      return(get(load(file.path(modelsPath, modelFile))))
+      if (grepl("\\.R$", modelFile)) {
+        modelFile2 <- sub("\\.R", ".RData", modelFile)
+        if (!file.exists(file.path(modelsPath, modelFile2))) {
+          file.rename(file.path(modelsPath, modelFile), file.path(modelsPath, modelFile2))
+        }
+        modelFile <- modelFile2
+      }
+      mod <- tryCatch(get(load(file.path(modelsPath, modelFile))),
+                      error = function(e) {
+                        NULL
+                      })
+      if (!is.null(mod)) {
+        return(mod)
+      }
     }
   })
   if (version == "reducedBAM") {
