@@ -77,7 +77,7 @@ defineModule(sim, list(
                     default = FALSE,
                     min = NA, max = NA,
                     desc = paste("Should the bird predictions return the final",
-                                  "rasters (FALSE) or path to these (TRUE).")),
+                                 "rasters (FALSE) or path to these (TRUE).")),
     defineParameter(name = "vegetationStatic", class = "logical",
                     default = FALSE,
                     min = NA, max = NA,
@@ -269,7 +269,7 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
                                 omitArgs = c("pathData", "useCache"))
 
       message(paste0("The following static layers have been loaded: \n",
-              paste(names(sim$staticLayers), collapse = ", ")))
+                     paste(names(sim$staticLayers), collapse = ", ")))
     },
     gettingData = {
       browser()
@@ -495,7 +495,7 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
     print("birdsList not supplied. Trying to get from available models.")
     sim$birdsList <- tryCatch({
       birdsOut <- drive_ls(path = as_id(sim$urlModels),
-               pattern = paste0("brt", P(sim)$version, ".R"))
+                           pattern = paste0("brt", P(sim)$version, ".R"))
       substrBoth(strng = birdsOut[["name"]], howManyCharacters = 4, fromEnd = FALSE)
     }, error = function(e) {
       ## Ceres: work around while sim$urlModels is not accessible
