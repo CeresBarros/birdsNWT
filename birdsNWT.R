@@ -315,7 +315,7 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
         }
       }
       if (any(is.null(mod$pixelGroupMap), is.null(mod$cohortData), is.null(mod$simulatedBiomassMap))) {
-        params(sim)$useTestSpeciesLayers <- TRUE
+        # params(sim)$useTestSpeciesLayers <- TRUE  ## Ceres: override
       }
 
       # schedule future event(s)
