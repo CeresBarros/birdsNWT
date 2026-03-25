@@ -92,25 +92,23 @@ loadStaticLayers <- function(fileURL,
                                        destinationPath = pathData,
                                        omitArgs = c("useCache", "purge")) |>
       Cache()
-    browser() ### here, need to terrarize
-    stk <- raster::stack(stkPre$targetFilePath) # This file has all species too. Exclude those.
-    stkNames <- unlist(lapply(X = 1:length(stk@layers), FUN = function(layers){
-      lay <- stk@layers[[layers]]@data@names
-      return(lay)
-    }))
+
+    stk <- rast(stkPre$targetFilePath) # This file has all species too. Exclude those.
+    stkNames <- names(stk)
     spLayers <- c("Species", "Structure")
     fixedLayers <- stkNames[!grepl(pattern = paste(spLayers, collapse = "|"),
                                    x = stkNames)]
 
-    subStaticLayers <- raster::subset(x = stk, subset = fixedLayers)
-    staticLayers <- lapply(X = seq_len(nlayers(subStaticLayers)), FUN = function(layer){
-      lay <- postProcess(subStaticLayers[[layer]], studyArea = studyArea,
-                         rasterToMatch = rasterToMatch, destinationPath = pathData,
-                         useCache = useCacheInternals, omitArgs = c("purge", "useCache"),
-                         filename2 = NULL)
+    subStaticLayers <- stk[[fixedLayers]]
+    staticLayers <- lapply(X = seq_len(nlyr(subStaticLayers)), FUN = function(layer){
+      lay <- postProcess(subStaticLayers[[layer]], cropTo = studyArea,
+                         to = rasterToMatch, destinationPath = pathData,
+                         useCache = useCacheInternals,
+                         writeTo = NULL) |>
+        Cache(omitArgs = c("purge", "useCache"))
       return(lay)
     })
-    staticLayers <- raster::stack(staticLayers)
+    staticLayers <- rast(staticLayers)
     names(staticLayers) <- fixedLayers # Maybe just passing the names to the stack would do the trick
   }
   return(staticLayers)
