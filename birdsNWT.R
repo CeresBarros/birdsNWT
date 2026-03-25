@@ -229,7 +229,8 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
       if (!P(sim)$onlyLoadModels) {
         sim <- scheduleEvent(sim, start(sim), "birdsNWT", "loadFixedLayers")
         sim <- scheduleEvent(sim, start(sim), "birdsNWT", "gettingData")
-        sim <- scheduleEvent(sim, start(sim), "birdsNWT", "prepPredictors")
+        sim <- scheduleEvent(sim, start(sim), "birdsNWT", "prepPredictorsVeg")
+        sim <- scheduleEvent(sim, start(sim), "birdsNWT", "prepPredictorsClim")
         sim <- scheduleEvent(sim, start(sim), "birdsNWT", "predictBirds", eventPriority = 9)
       }
     },
@@ -318,8 +319,8 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
           sim <- scheduleEvent(sim, end(sim), "birdsNWT", "gettingData")
       }
     },
-    prepPredictors = {
-      browser()
+    prepPredictorsVeg = {
+      browser()  ## HERE: these are the final layers I need. Need to save successionLayers.
       if (P(sim)$useTestSpeciesLayers == TRUE) {
         message("Using test layers for species. Predictions will be static and identical to original data.")
         sim$successionLayers <- Cache(prepInputStack,
@@ -333,33 +334,46 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
                 !suppliedElsewhere("pixelGroupMap", sim)))
           if (any(is.null(mod$simulatedBiomassMap),
                   is.null(mod$pixelGroupMap),
-                  is.null(mod$cohortData)))
-            stop("'useTestSpeciesLayers' is FALSE, but apparently no vegetation simulation was run.",
-                 " Check your inputs folder or simulation module.")
-        sim$successionLayers <- createSpeciesStackLayer(
-          modelList = sim$birdModels,
-          pixelsWithDataAtInitialization = sim$pixelsWithDataAtInitialization,
-          urlStaticLayer = sim$urlStaticLayers,
-          simulatedBiomassMap = mod$simulatedBiomassMap,
-          cohortData = mod$cohortData,
-          staticLayers = sim$staticLayers,
-          sppEquiv = sim$sppEquiv,
-          sppEquivCol = sim$sppEquivCol,
-          pixelGroupMap = mod$pixelGroupMap,
-          allVariables = sim$allVariables,
-          pathData = mod$dPath,
-          forestOnly = sim$forestOnly,
-          uplandsRaster = sim$uplandsRaster,
-          rasterToMatch = sim$rasterToMatch,
-          useOnlyUplandsForPrediction = P(sim)$useOnlyUplandsForPrediction,
-          useStaticPredictionsForNonForest = P(sim)$useStaticPredictionsForNonForest,
-          version = P(sim)$version,
-          urlStaticLayers = sim$urlStaticLayers,
-          studyArea = sim$studyArea,
-          # Province = strsplit(P(sim)$scenario, split = "_")[[1]][1]
-          Province = "NT"
-        )
+                  is.null(mod$cohortData))) {
+            ## Ceres: workaround to allow empty layers when not running every year
+            # stop("'useTestSpeciesLayers' is FALSE, but apparently no vegetation simulation was run.",
+            #      " Check your inputs folder or simulation module.")
+            warning("No vegetation layers found for year", time(sim), ". Skipping veg layers.")
+            sim$successionLayers <- NULL
+          } else {
+            sim$successionLayers <- createSpeciesStackLayer(
+              modelList = sim$birdModels,
+              pixelsWithDataAtInitialization = sim$pixelsWithDataAtInitialization,
+              urlStaticLayer = sim$urlStaticLayers,
+              simulatedBiomassMap = mod$simulatedBiomassMap,
+              cohortData = mod$cohortData,
+              staticLayers = sim$staticLayers,
+              sppEquiv = sim$sppEquiv,
+              sppEquivCol = sim$sppEquivCol,
+              pixelGroupMap = mod$pixelGroupMap,
+              allVariables = sim$allVariables,
+              pathData = mod$dPath,
+              forestOnly = sim$forestOnly,
+              uplandsRaster = sim$uplandsRaster,
+              rasterToMatch = sim$rasterToMatch,
+              useOnlyUplandsForPrediction = P(sim)$useOnlyUplandsForPrediction,
+              useStaticPredictionsForNonForest = P(sim)$useStaticPredictionsForNonForest,
+              version = P(sim)$version,
+              urlStaticLayers = sim$urlStaticLayers,
+              studyArea = sim$studyArea,
+              # Province = strsplit(P(sim)$scenario, split = "_")[[1]][1]
+              Province = "NT" ## Ceres: workaround
+            )
+          }
       }
+
+      sim <- scheduleEvent(sim, time(sim) + P(sim)$predictionInterval, "birdsNWT", "prepPredictorsVeg")
+      if (P(sim)$predictLastYear) {
+        if (all(time(sim) == start(sim), (end(sim) - start(sim)) != 0))
+          sim <- scheduleEvent(sim, end(sim), "birdsNWT", "prepPredictorsVeg")
+      }
+    },
+    prepPredictorsClim = {
       if (P(sim)$version %in% c("5", "6", "6a", "8", "reducedBAM")) {
         if (P(sim)$climateStatic) {
           timeClimate <- start(sim)
@@ -419,10 +433,10 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
           sim$successionLayers <- raster::stack(sim$successionLayers, sim$climateLayersBirds)
         })
       }
-      sim <- scheduleEvent(sim, time(sim) + P(sim)$predictionInterval, "birdsNWT", "prepPredictors")
+      sim <- scheduleEvent(sim, time(sim) + P(sim)$predictionInterval, "birdsNWT", "prepPredictorsClim")
       if (P(sim)$predictLastYear) {
         if (all(time(sim) == start(sim), (end(sim) - start(sim)) != 0))
-          sim <- scheduleEvent(sim, end(sim), "birdsNWT", "prepPredictors")
+          sim <- scheduleEvent(sim, end(sim), "birdsNWT", "prepPredictorsClim")
       }
     },
     predictBirds = {
