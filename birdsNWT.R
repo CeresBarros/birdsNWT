@@ -235,7 +235,6 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
       }
     },
     loadModels = {
-      browser()
       sim$birdModels <- loadBirdModels(birdsList = sim$birdsList,
                                        folderUrl = sim$urlModels,
                                        pathData = mod$dPath,
@@ -255,7 +254,6 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
         # weight
         sim$allVariables <- unique(unlist(lapply(names(sim$birdModels), function(birds) sim$birdModels[[birds]][["RES"]][["vars"]])))
       }
-      browser()
 
       sim$staticLayers <- Cache(loadStaticLayers,
                                 fileURL = sim$urlStaticLayers, # Add Cache when fun is ready
@@ -273,7 +271,6 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
                      paste(names(sim$staticLayers), collapse = ", ")))
     },
     gettingData = {
-      browser()
       if (P(sim)$vegetationStatic) {
         timeVegetation <- start(sim)
         message(crayon::red("vegetationStatic is TRUE. Vegetation layers will be kept Static"))
