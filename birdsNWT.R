@@ -283,27 +283,36 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
       } else {
         mod$cohortData <- createModObjectBirds(data = "cohortData", sim = sim,
                                                pathInput = inputPath(sim),
-                                               currentTime = timeVegetation,
-                                               fun = qread)
+                                               currentTime = timeVegetation
+                                               # , fun = qread ## Ceres: files I have access to are rds
+        )
       }
 
       if (!is.null(sim$pixelGroupMap)) {
         mod$pixelGroupMap <- sim$pixelGroupMap
       } else {
         mod$pixelGroupMap <- createModObjectBirds(data = "pixelGroupMap", sim = sim,
-                                             pathInput = inputPath(sim),
-                                             currentTime = timeVegetation,
-                                             fun = raster, ignore = ".aux")
+                                                  pathInput = inputPath(sim),
+                                                  currentTime = timeVegetation
+                                                  # , fun = qread ## Ceres: files I have access to are rds
+        )
+        if (inherits(mod$pixelGroupMap, "Raster")) {
+          mod$pixelGroupMap <- rast(mod$pixelGroupMap)
+        }
       }
 
       if (!is.null(sim$simulatedBiomassMap)) {
         mod$simulatedBiomassMap <- sim$simulatedBiomassMap
       } else {
         mod$simulatedBiomassMap <- createModObjectBirds(data = "simulatedBiomassMap",
-                                                   sim = sim,
-                                                   pathInput = inputPath(sim),
-                                                   currentTime = timeVegetation,
-                                                   fun = raster)
+                                                        sim = sim,
+                                                        pathInput = inputPath(sim),
+                                                        currentTime = timeVegetation
+                                                        # , fun = qread ## Ceres: files I have access to are rds
+        )
+        if (inherits(mod$simulatedBiomassMap, "Raster")) {
+          mod$simulatedBiomassMap <- rast(mod$simulatedBiomassMap)
+        }
       }
       if (any(is.null(mod$pixelGroupMap), is.null(mod$cohortData), is.null(mod$simulatedBiomassMap))) {
         params(sim)$useTestSpeciesLayers <- TRUE
