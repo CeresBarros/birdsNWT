@@ -346,6 +346,14 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
             warning("No vegetation layers found for year", time(sim), ". Skipping veg layers.")
             sim$successionLayers <- NULL
           } else {
+
+            ## Ceres: workaround -- the output of postProcess(uplandsRaster, ...) in .inputsObject
+            ## is not being properly recovered so we'll force the matching here:
+            browser()  ## HERE: these are the final layers I need. Make sure successionLayers is being saved
+            if (!compareGeom(sim$uplandsRaster, sim$rasterToMatch, stopOnError = FALSE)) {
+              sim$uplandsRaster <- postProcess(sim$uplandsRaster, to = sim$rasterToMatch)
+            }
+
             sim$successionLayers <- createSpeciesStackLayer(
               modelList = sim$birdModels,
               pixelsWithDataAtInitialization = sim$pixelsWithDataAtInitialization,
@@ -586,12 +594,14 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
     sim$uplandsRaster <- raster::setValues(sim$uplandsRaster, uplandVals)
   }
 
-  if (ext(sim$uplandsRaster) != ext(sim$studyArea)) {
+  if (ext(sim$uplandsRaster) != ext(sim$rasterToMatch)) {
+    ## Ceres March 2026: something is wrong here. The post-processed object is not
+    ## correctly overwriting the one in sim and at init we're back to the original extent.
     sim$uplandsRaster <- Cache(postProcess,
                                x = sim$uplandsRaster,
-                               studyArea = sim$studyArea,
+                               to = sim$rasterToMatch,
                                destinationFolder = mod$dPath,
-                               filename2 = NULL)
+                               writeTo = NULL)
   }
   if (!suppliedElsewhere("waterRaster", sim)) {
     wetlandRaster <- Cache(prepInputsLayers_DUCKS,
