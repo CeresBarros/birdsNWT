@@ -164,7 +164,7 @@ createSpeciesStackLayer <- function(modelList,
   } else {
     speciesNames <- unique(speciesLayerNames$LandR)
   }
-  zeroedMap <- raster(pixelGroupMap)
+  zeroedMap <- rast(pixelGroupMap)
   if (!is.null(pixelsWithDataAtInitialization)) {
     # here I need to "fill back up" or 'extend' my cohort data to the pixels that had biomass and don't have anymore
     # pixelsWithDataAtInitialization
@@ -173,7 +173,7 @@ createSpeciesStackLayer <- function(modelList,
     zeroPixGroup <- zeroPixGroup[is.na(pixThatHadBiomass), ]
     pixelGroupMap[zeroPixGroup$pixelID] <- 0 # Do we have any pixelGroup as 0? No
   }
-  pixelGroupMapRed <- data.table(pixelGroup = unique(raster::getValues(pixelGroupMap)))
+  pixelGroupMapRed <- data.table(unique(pixelGroupMap[]))
   pixelGroupMapRed <- na.omit(pixelGroupMapRed)
   if (!is.null(pixelsWithDataAtInitialization)) {
     # here I need to "fill back up" or 'extend' my cohort data to the pixels that had biomass and don't have anymore
@@ -211,14 +211,14 @@ createSpeciesStackLayer <- function(modelList,
   speciesRasters <- lapply(X = whichSp, FUN = function(sp) {
     # TODO: Make this into a function and use it below too
     subsCohort <- cohortData[speciesCode == sp, ]
-    zeroedMap[] <- getValues(pixelGroupMap)
-    vals <- getValues(x = zeroedMap)
+    zeroedMap[] <- pixelGroupMap[]
+    vals <- as.vector(zeroedMap[])
     vals[!is.na(vals)] <- 0
     zeroedMap <- setValues(x = zeroedMap, values = vals)
     if (NROW(subsCohort) != 0) {
       valsCoho <- data.table(
         pixelID = 1:ncell(pixelGroupMap),
-        pixelGroup = getValues(x = pixelGroupMap)
+        pixelGroup = as.vector(pixelGroupMap[])
       )
       joinOn <- c("speciesCode", "pixelGroup")
       newCohoVals <- valsCoho[subsCohort[, list(sumBiomass = sum(B)), by = joinOn],
@@ -266,7 +266,7 @@ createSpeciesStackLayer <- function(modelList,
         subsCohort <- cohortData[speciesCode == sps, ]
         valsCoho <- data.table(
           pixelID = 1:ncell(pixelGroupMap),
-          pixelGroup = getValues(x = pixelGroupMap)
+          pixelGroup = as.vector(pixelGroupMap[])
         )
         joinOn <- c("speciesCode", "pixelGroup")
         cohortDataS <- valsCoho[subsCohort[, list(sumBiomass = sum(B)), by = joinOn],
@@ -290,7 +290,7 @@ createSpeciesStackLayer <- function(modelList,
 
       originalSppPix <- data.table(
         pixelID = 1:ncell(originalSpp[[1]]),
-        vals = getValues(originalSpp[[1]])
+        vals = as.vector(originalSpp[[1]][])
       )
       originalSppPix[originalSppPix == 0] <- NA
       originalSppPix <- na.omit(originalSppPix)
