@@ -176,16 +176,19 @@ createSpeciesStackLayer <- function(modelList,
   pixelGroupMapRed <- data.table(unique(pixelGroupMap[]))
   pixelGroupMapRed <- na.omit(pixelGroupMapRed)
   if (!is.null(pixelsWithDataAtInitialization)) {
+    browser() ## Ceres: terrarize if this is hit
     # here I need to "fill back up" or 'extend' my cohort data to the pixels that had biomass and don't have anymore
     # pixelsWithDataAtInitialization
     cohortDataZeroed <- data.table(matrix(0,
       nrow = length(levels(cohortData$speciesCode)),
       ncol = NCOL(cohortData)
     ))
+
     names(cohortDataZeroed) <- names(cohortData)
     cohortDataZeroed$speciesCode <- levels(cohortData$speciesCode)
     cohortData <- rbind(cohortData, cohortDataZeroed)
   }
+  browser() # this is erroring:
   cohortData <- cohortData[pixelGroupMapRed, on = "pixelGroup"]
   if (makeAssertions) {
     if (NROW(cohortData) != NROW(na.omit(cohortData))) {
