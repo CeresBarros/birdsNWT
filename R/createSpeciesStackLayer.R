@@ -105,14 +105,19 @@ createSpeciesStackLayer <- function(modelList,
   # Here is where birds get masked to upland forested sites only. We should not do that IF LandR is predicting well for
   # lower biomass sites
   if (useOnlyUplandsForPrediction) {
-    if (!all(unlist(lapply(list(uplandsRaster, forestOnly, rasterToMatch), FUN = is, class2 = "RasterLayer")))) {
+    if (!all(unlist(lapply(list(uplandsRaster, forestOnly, rasterToMatch), FUN = is, class2 = "SpatRaster")))) {
       stop("At least one of your layers (sim$uplandsRaster, sim$forestOnly, sim$rasterToMatch) is NULL. Please debug.")
     }
     forestUplandRTM <- uplandsRaster * forestOnly * rasterToMatch
-    if (any(!names(table(forestUplandRTM[], useNA = "ifany")) %in% c("0", "1", NA))) {
+    ## Ceres: forestUplandRTM ends up with NaNs and NA's; convert NaNs to NAs
+    if (isTRUE(any(forestUplandRTM[] == "NaN"))) {  ## needs to be character "NaN"
+      forestUplandRTM[forestUplandRTM[] == "NaN"] <- NA
+    }
+
+    if (any(!forestUplandRTM[] %in% c(0, 1, NA))) {
       forestUplandRTM[forestUplandRTM > 0 | forestUplandRTM < 0] <- 1
     }
-    if (any(!names(table(forestUplandRTM[], useNA = "ifany")) %in% c("0", "1", NA))) {
+    if (any(!forestUplandRTM[] %in% c(0, 1, NA))) {
       stop(
         "One or more of your rasters (sim$uplandsRaster, sim$forestOnly, sim$rasterToMatch)",
         " is not binary even after converting. Please debug."
