@@ -235,6 +235,7 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
       }
     },
     loadModels = {
+      ## Ceres: a single model is > 1Gb. Cache takes ages to digest
       sim$birdModels <- loadBirdModels(birdsList = sim$birdsList,
                                        folderUrl = sim$urlModels,
                                        pathData = mod$dPath,
@@ -254,7 +255,6 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
         # weight
         sim$allVariables <- unique(unlist(lapply(names(sim$birdModels), function(birds) sim$birdModels[[birds]][["RES"]][["vars"]])))
       }
-
       sim$staticLayers <- Cache(loadStaticLayers,
                                 fileURL = sim$urlStaticLayers, # Add Cache when fun is ready
                                 pathData = mod$dPath,
@@ -326,7 +326,6 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
       }
     },
     prepPredictorsVeg = {
-      browser()  ## HERE: these are the final layers I need. Need to save successionLayers.
       if (P(sim)$useTestSpeciesLayers == TRUE) {
         message("Using test layers for species. Predictions will be static and identical to original data.")
         sim$successionLayers <- Cache(prepInputStack,
