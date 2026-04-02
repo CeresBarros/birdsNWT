@@ -584,10 +584,13 @@ createSpeciesStackLayer <- function(modelList,
       if (any(spAvailable)) {
         spRas <- get(whichStkToUse)[[names(get(whichStkToUse))[spAvailable]]]
       } else {
-        stop(paste(
+        ## Ceres:  changed to warning Abies_Bal is only appears as a landscape predictor
+        ## as is missing from `speciesRasters` and `speciesStack`
+        warning(paste(
           lay, "is not available to build Landscape layer.",
           "This should not happen. Somewhere there is a bug..."
         ))
+        return(NULL)
       }
       if (version %in% c(1:8, "6a")) {
         nm <- paste0(
