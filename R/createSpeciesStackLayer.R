@@ -74,7 +74,7 @@ createSpeciesStackLayer <- function(modelList,
       return(speciesDT)
     }))
   }
-  speciesLayerNames <- rbindlist(lapply(X = speciesNames, FUN = function(sp) {
+  speciesLayerNames <- rbindlist(lapply(speciesNames, FUN = function(sp) {
     whichLay <- predictors[grepl(sp, predictors)]
     if (length(whichLay) == 0) {
       whichLay <- NA
@@ -188,7 +188,7 @@ createSpeciesStackLayer <- function(modelList,
     cohortDataZeroed$speciesCode <- levels(cohortData$speciesCode)
     cohortData <- rbind(cohortData, cohortDataZeroed)
   }
-  browser() # this is erroring:
+
   cohortData <- cohortData[pixelGroupMapRed, on = "pixelGroup"]
   if (makeAssertions) {
     if (NROW(cohortData) != NROW(na.omit(cohortData))) {
@@ -211,7 +211,7 @@ createSpeciesStackLayer <- function(modelList,
   whichSp <- whichSp[!whichSp %in% genusOnly]
 
   # Species level raster
-  speciesRasters <- lapply(X = whichSp, FUN = function(sp) {
+  speciesRasters <- lapply(whichSp, FUN = function(sp) {
     # TODO: Make this into a function and use it below too
     subsCohort <- cohortData[speciesCode == sp, ]
     zeroedMap[] <- pixelGroupMap[]
@@ -246,7 +246,7 @@ createSpeciesStackLayer <- function(modelList,
   names(speciesRasters) <- names(stack(speciesRasters))
 
   # Genus level raster
-  genusRasters <- lapply(X = genusOnly, FUN = function(sp) {
+  genusRasters <- lapply(genusOnly, FUN = function(sp) {
     # TODO: Make this into a function and use it below too
     # 1. Load original raster for the given species
     spLayerName <- speciesLayerNames[LandR == sp, modelLayer]
@@ -468,13 +468,14 @@ createSpeciesStackLayer <- function(modelList,
         staticLayersNames = laysNeeded
       )
     }
+
     message("Original species (i.e., Species) layers contain:")
     message(paste(names(originalSpeciesLayers), collapse = ", "))
 
     # Matching the rasters names that I have, to mask the NA's
     nameStack <- names(speciesStack)
     matchedLays <- data.frame(
-      toMask = seq(1:length(names(speciesStack))),
+      toMask = seq_len(nlyr(speciesStack)),
       original = match(names(speciesStack), names(originalSpeciesLayers))
     )
     matched <- split(matchedLays, seq(nrow(matchedLays)))
@@ -493,6 +494,7 @@ createSpeciesStackLayer <- function(modelList,
     }))
     gc()
     names(speciesStack) <- nameStack
+    gc(reset = TRUE)
   }
 
   ###################### MAKE THE GROUPS LAYERS  ######################
