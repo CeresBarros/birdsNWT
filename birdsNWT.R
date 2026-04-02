@@ -573,7 +573,6 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
     forestClasses <- c(1:15, 34:35)
     sim$forestOnly <- sim$rasterToMatch
     sim$forestOnly[!sim$rstLCC[] %in% forestClasses] <- NA
-
   }
 
   if (!suppliedElsewhere("uplandsRaster", sim = sim, where = "sim")) {
