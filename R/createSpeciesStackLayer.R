@@ -674,10 +674,9 @@ createSpeciesStackLayer <- function(modelList,
   }
 
   if (!is.null(missingLayers)) {
-    finalStk <- raster::stack(missingLayers) %>%
-      raster::stack(speciesStack)
+    finalStk <- rast(list(missingLayers, speciesStack))
   } else {
-    finalStk <- raster::stack(speciesStack)
+    finalStk <- speciesStack
   }
   gc()
   return(finalStk)
