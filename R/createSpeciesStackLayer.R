@@ -592,14 +592,15 @@ createSpeciesStackLayer <- function(modelList,
         ))
         return(NULL)
       }
-      if (version %in% c(1:8, "6a")) {
-        nm <- paste0(
-          "Landsc750_",
-          paste(strsplit(x = lay, split = "_")[[1]][2:4],
-            collapse = "_"
-          )
-        )
-      } else {
+      # Ceres: the following doesnt seem to be applicable to the v8 model predictor names I have access to
+      # if (version %in% c(1:8, "6a")) {
+      #   nm <- paste0(
+      #     "Landsc750_",
+      #     paste(strsplit(x = lay, split = "_")[[1]][2:4],
+      #       collapse = "_"
+      #     )
+      #   )
+      # } else {
         nm <- paste0("Landsc750_", lay)
       # }
       if (any(minmax(spRas)["min",] != 0, minmax(spRas)["max",] != 0)) {
