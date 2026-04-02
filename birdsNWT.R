@@ -349,7 +349,6 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
 
             ## Ceres: workaround -- the output of postProcess(uplandsRaster, ...) in .inputsObject
             ## is not being properly recovered so we'll force the matching here:
-            browser()  ## HERE: these are the final layers I need. Make sure successionLayers is being saved
             if (!compareGeom(sim$uplandsRaster, sim$rasterToMatch, stopOnError = FALSE)) {
               sim$uplandsRaster <- postProcess(sim$uplandsRaster, to = sim$rasterToMatch)
             }
