@@ -126,11 +126,11 @@ createSpeciesStackLayer <- function(modelList,
 
     pixelGroupMap <- Cache(postProcess,
       x = pixelGroupMap,
-      rasterToMatch = forestUplandRTM,
+      maskTo = forestUplandRTM,
+      cropTo = NULL,
+      projectTo = NULL,
       destinationPath = tempdir(),
-      filename2 = NULL,
-      maskWithRTM = TRUE,
-      useCache = FALSE
+      writeTo = NULL
     )
   }
 
@@ -446,8 +446,7 @@ createSpeciesStackLayer <- function(modelList,
         url = urlStaticLayer,
         alsoExtract = "similar",
         destinationPath = pathData,
-        studyArea = studyArea,
-        rasterToMatch = rasterToMatch
+        to = rasterToMatch
       )
     } else {
       laysNeeded <- c(
