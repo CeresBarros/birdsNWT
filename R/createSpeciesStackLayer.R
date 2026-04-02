@@ -160,7 +160,7 @@ createSpeciesStackLayer <- function(modelList,
 
   # Iterate through species and for each species, plot the B in the `pixelGroupMap`
   if (version %in% c(1:8, "6a")) {
-    names(speciesNames) <- speciesLayerNames$modelLayer[match(speciesLayerNames$speciesName, speciesNames)]
+    names(speciesNames) <- speciesLayerNames$modelLayer[match(speciesNames, speciesLayerNames$speciesName)]
   } else {
     speciesNames <- unique(speciesLayerNames$LandR)
   }
@@ -198,7 +198,7 @@ createSpeciesStackLayer <- function(modelList,
 
   ###################### MAKE THE SPECIES LAYERS  ######################
 
-  whichSp <- unique(speciesNames[!is.na(speciesNames)])
+  whichSp <- unique(speciesNames[!is.na(names(speciesNames))])
 
   # Need to separate any Spp or sp because they are unidentified to species
   # level, likely hybrids. The way we will deal with this here is:
