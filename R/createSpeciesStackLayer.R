@@ -618,7 +618,18 @@ createSpeciesStackLayer <- function(modelList,
 
   landscapeLays <- rast(landscapeLays)
   toc()
-  speciesStack <- raster::stack(speciesStack, landscapeLays, landcoverLayers)
+  ## Ceres: i can't get the layers to match spatially, so i'll coerce them to RTM
+  if (!compareGeom(speciesStack, rasterToMatch, stopOnError = FALSE)) {
+    speciesStack <- postProcess(speciesStack, to = rasterToMatch)
+  }
+  if (!compareGeom(landscapeLays, rasterToMatch, stopOnError = FALSE)) {
+    landscapeLays <- postProcess(landscapeLays, to = rasterToMatch)
+  }
+
+  if (!compareGeom(landcoverLayers, rasterToMatch, stopOnError = FALSE)) {
+    landcoverLayers <- postProcess(landcoverLayers, to = rasterToMatch)
+  }
+  speciesStack <- rast(list(speciesStack, landscapeLays, landcoverLayers))
 
   ###################### CHECKING AND ADDING MISSING LAYERS  ######################
 
