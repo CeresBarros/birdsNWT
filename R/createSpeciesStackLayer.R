@@ -214,10 +214,10 @@ createSpeciesStackLayer <- function(modelList,
   speciesRasters <- lapply(whichSp, FUN = function(sp) {
     # TODO: Make this into a function and use it below too
     subsCohort <- cohortData[speciesCode == sp, ]
-    zeroedMap[] <- pixelGroupMap[]
-    vals <- as.vector(zeroedMap[])
+    vals <- as.vector(pixelGroupMap[])
     vals[!is.na(vals)] <- 0
-    zeroedMap <- setValues(x = zeroedMap, values = vals)
+    zeroedMap[] <- vals
+
     if (NROW(subsCohort) != 0) {
       valsCoho <- data.table(
         pixelID = 1:ncell(pixelGroupMap),
@@ -243,7 +243,7 @@ createSpeciesStackLayer <- function(modelList,
     }
     return(zeroedMap)
   })
-  names(speciesRasters) <- names(stack(speciesRasters))
+  names(speciesRasters) <- names(rast(speciesRasters))
 
   # Genus level raster
   genusRasters <- lapply(genusOnly, FUN = function(sp) {
@@ -344,7 +344,10 @@ createSpeciesStackLayer <- function(modelList,
     }
     return(zeroedMap)
   })
-  names(genusRasters) <- names(stack(genusRasters))
+
+  if (length(genusRasters)) {
+    names(genusRasters) <- names(rast(genusRasters))
+  }
   # Now I need to put both species and genus layers together
   speciesRasters <- c(speciesRasters, genusRasters)
 
@@ -408,10 +411,9 @@ createSpeciesStackLayer <- function(modelList,
   }
 
   ###################### MAKE THE AGE LAYER  ######################
-
   ageLayerName <- predictors[grepl(x = predictors, pattern = "Structure_Stand_Age")]
-  ageMap <- raster(pixelGroupMap)
-  valsAge <- data.table(pixelID = 1:ncell(ageMap), pixelGroup = getValues(x = pixelGroupMap))
+  ageMap <- rast(pixelGroupMap)
+  valsAge <- data.table(pixelID = 1:ncell(ageMap), pixelGroup = as.vector(pixelGroupMap[]))
   newAgeVals <- valsAge[cohortData[, list(age = max(age)), by = "pixelGroup"], on = "pixelGroup"]
   ageMap[newAgeVals$pixelID] <- newAgeVals$age
   names(ageMap) <- ageLayerName
@@ -423,9 +425,7 @@ createSpeciesStackLayer <- function(modelList,
     ),
     modelLayer
   ]
-  speciesStack <- raster::stack(speciesRasters[names(speciesRasters) %in% speciesLays]) %>%
-    raster::stack(biomass) %>%
-    raster::stack(ageMap)
+  speciesStack <- rast(c(speciesRasters[names(speciesRasters) %in% speciesLays], biomass, ageMap))
 
   ############## FIX IF USE PREDICTIONS FOR UPLAND ONLY / NON-FOREST  ########
 
@@ -448,6 +448,8 @@ createSpeciesStackLayer <- function(modelList,
         destinationPath = pathData,
         to = rasterToMatch
       )
+      ## Ceres: not necessary anymore
+      # originalSpeciesLayers <- rast(originalSpeciesLayers)
     } else {
       laysNeeded <- c(
         speciesLayerNames[["modelLayer"]][grepl(
@@ -478,20 +480,17 @@ createSpeciesStackLayer <- function(modelList,
       original = match(names(speciesStack), names(originalSpeciesLayers))
     )
     matched <- split(matchedLays, seq(nrow(matchedLays)))
-    speciesStack <- raster::stack(lapply(X = matched, FUN = function(matching) {
+    speciesStack <- lapply(matched, FUN = function(matching) {
       if (names(speciesStack[[matching[["toMask"]]]]) != names(originalSpeciesLayers[[matching[["original"]]]])) {
         stop("The original species raster and the succession one don't match. Please debug it.")
       } # data sanity check
-      valsOriginal <- raster::getValues(originalSpeciesLayers[[matching[["original"]]]])
-      valsToMask <- raster::getValues(speciesStack[[matching[["toMask"]]]])
+      valsOriginal <- as.vector(originalSpeciesLayers[[matching[["original"]]]][])
+      valsToMask <- as.vector(speciesStack[[matching[["toMask"]]]][])
       valsToMask[is.na(valsToMask)] <- valsOriginal[is.na(valsToMask)]
-      speciesStack[[matching[["toMask"]]]] <- raster::setValues(
-        x = speciesStack[[matching[["toMask"]]]],
-        values = valsToMask
-      )
+      speciesStack[[matching[["toMask"]]]][] <- valsToMask
       return(speciesStack[[matching[["toMask"]]]])
-    }))
-    gc()
+    })
+    speciesStack <- rast(speciesStack)
     names(speciesStack) <- nameStack
     gc(reset = TRUE)
   }
@@ -526,8 +525,9 @@ createSpeciesStackLayer <- function(modelList,
     groupsLayers <- NULL
   }
 
-  speciesStack <- raster::stack(speciesStack) %>%
-    raster::stack(groupsLayers)
+  if (!is.null(groupsLayers)) {
+    speciesStack <- rast(list(speciesStack, groupsLayers))
+  }
 
   ###################### MAKE THE LANDCOVER LAYERS  ######################
   # We decided that landcover layers can't really be derived from our data.
@@ -560,7 +560,7 @@ createSpeciesStackLayer <- function(modelList,
     x = predictors
   )]
 
-  fw750 <- focalWeight(x = speciesStack[[1]], d = 750, type = "Gauss")
+  fw750 <- focalMat(x = speciesStack[[1]], d = 750, type = "Gauss")
   # Gaussian filter with sigma=750 (tapers off around 2km)
   # Gaussian filter for biomass and age layers
 
@@ -570,7 +570,7 @@ createSpeciesStackLayer <- function(modelList,
   ), `[[`, 2))
   tic("Landscape layers elapsed time: ")
 
-  landscapeLays <- stack(lapply(spLaysForLandscape,
+  landscapeLays <- lapply(spLaysForLandscape,
     focalWeight = fw750,
     function(lay, focalWeight) {
       spAvailable <- grepl(pattern = lay, x = names(speciesRasters))
@@ -598,11 +598,11 @@ createSpeciesStackLayer <- function(modelList,
         )
       } else {
         nm <- paste0("Landsc750_", lay)
-      }
-      if (any(minValue(spRas) != 0, maxValue(spRas) != 0)) {
+      # }
+      if (any(minmax(spRas)["min",] != 0, minmax(spRas)["max",] != 0)) {
         # if we actually have data, calculate the focal
         message(paste0("Calculating landscape gaussian filter for ", nm))
-        newR <- raster::focal(spRas, w = focalWeight, na.rm = TRUE)
+        newR <- focal(spRas, w = focalWeight, na.rm = TRUE)
       } else {
         message(paste0(nm, " has no data. Adding a zeroed landscape map"))
         newR <- spRas
@@ -610,7 +610,9 @@ createSpeciesStackLayer <- function(modelList,
       names(newR) <- nm
       return(newR)
     }
-  ))
+  )
+
+  landscapeLays <- rast(landscapeLays)
   toc()
   speciesStack <- raster::stack(speciesStack, landscapeLays, landcoverLayers)
 
@@ -634,11 +636,11 @@ createSpeciesStackLayer <- function(modelList,
       "Completing prediction stack with zeroed layers for:"
     )))
     message(crayon::yellow(paste(missingLayersNames, collapse = ", ")))
-    missingLayers <- lapply(X = missingLayersNames, FUN = function(miss) {
+    missingLayers <- lapply(missingLayersNames, FUN = function(miss) {
       zeroedMap <- pixelGroupMap
-      vals <- getValues(x = zeroedMap)
+      vals <- as.vector(zeroedMap[])
       vals[!is.na(vals)] <- 0
-      zeroedMap <- setValues(x = zeroedMap, values = vals)
+      zeroedMap[] <- vals
       names(zeroedMap) <- miss
       if (miss == "YEAR") {
         # As YEAR can't be 0, we need to specifically change this one
