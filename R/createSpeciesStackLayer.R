@@ -192,7 +192,12 @@ createSpeciesStackLayer <- function(modelList,
   cohortData <- cohortData[pixelGroupMapRed, on = "pixelGroup"]
   if (makeAssertions) {
     if (NROW(cohortData) != NROW(na.omit(cohortData))) {
-      stop("cohortData has NA's. Please debug!")
+      if (all(cohortData[!complete.cases(cohortData)][["pixelGroup"]] == 0)) {
+        ## Zero PGs are usually recently disturbed/burnt and have no B. this is ok
+        cohortData <- na.omit(cohortData)
+      } else {
+        stop("cohortData has NA's. Please debug!")
+      }
     }
   }
 
