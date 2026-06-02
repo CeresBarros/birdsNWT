@@ -124,14 +124,32 @@ createSpeciesStackLayer <- function(modelList,
       )
     }
 
+
+    ## Ceres: crop is not being able to completely coerce the pGM extent...
+    ## so create a temporary projected map, empty it and then put the values in
     pixelGroupMap <- Cache(postProcess,
-      x = pixelGroupMap,
-      maskTo = forestUplandRTM,
-      cropTo = NULL,
-      projectTo = NULL,
-      destinationPath = tempdir(),
-      writeTo = NULL
-    )
+                           x = pixelGroupMap,
+                           cropTo = forestUplandRTM,
+                           maskTo = forestUplandRTM,
+                           projectTo = NA,
+                           destinationPath = tempdir(),
+                           writeTo = NULL)
+
+    if (!compareGeom(pixelGroupMap, forestUplandRTM, stopOnError = FALSE)) {
+      pixelGroupMapTemp <- Cache(postProcess,
+                                 x = pixelGroupMap,
+                                 to = forestUplandRTM,
+                                 destinationPath = tempdir(),
+                                 writeTo = NULL)
+      pixelGroupMapTemp[] <- NA
+
+      if (ncell(pixelGroupMapTemp) == ncell(pixelGroupMap)) {
+        pixelGroupMapTemp[] <- pixelGroupMap[]
+        pixelGroupMap <- pixelGroupMapTemp
+      } else {
+        stop("Can't coerce simulated pixelGroupMap to forestUplandRTM raster properties.")
+      }
+    }
   }
 
   # Need to get the LandR equivalent of the species layer. While species layer
