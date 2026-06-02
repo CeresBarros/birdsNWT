@@ -504,14 +504,23 @@ createSpeciesStackLayer <- function(modelList,
     matched <- split(matchedLays, seq(nrow(matchedLays)))
 
     speciesStack <- lapply(matched, FUN = function(matching) {
-      if (names(speciesStack[[matching[["toMask"]]]]) != names(originalSpeciesLayers[[matching[["original"]]]])) {
+      origRaster <- originalSpeciesLayers[[matching[["original"]]]]
+      newRaster <- speciesStack[[matching[["toMask"]]]]
+
+      # data sanity check
+      if (names(newRaster) != names(origRaster)) {
         stop("The original species raster and the succession one don't match. Please debug it.")
-      } # data sanity check
-      valsOriginal <- as.vector(originalSpeciesLayers[[matching[["original"]]]][])
-      valsToMask <- as.vector(speciesStack[[matching[["toMask"]]]][])
+      }
+
+      if (!compareGeom(origRaster, newRaster, stopOnError = FALSE)) {
+        stop("The properties of the original species raster and the succession one do not match.")
+      }
+
+      valsOriginal <- as.vector(origRaster[])
+      valsToMask <- as.vector(newRaster[])
       valsToMask[is.na(valsToMask)] <- valsOriginal[is.na(valsToMask)]
-      speciesStack[[matching[["toMask"]]]][] <- valsToMask
-      return(speciesStack[[matching[["toMask"]]]])
+      newRaster[] <- valsToMask
+      return(newRaster)
     })
     speciesStack <- rast(speciesStack)
     names(speciesStack) <- nameStack
