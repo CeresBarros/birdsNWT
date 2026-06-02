@@ -158,8 +158,8 @@ createSpeciesStackLayer <- function(modelList,
   eqvTB <- eqvTB[KNN != "" & LandR != "", ] # TODO: If I ever add data sources other than KNN,
   # 'KNN != "" &' needs to be removed
   speciesLayerNames <- merge(speciesLayerNames, eqvTB,
-    all.x = TRUE,
-    by.x = "speciesName", by.y = "KNN"
+                             all.x = TRUE,
+                             by.x = "speciesName", by.y = "KNN"
   ) # Previous eqvTBred
   # At this point, if we have species in the table that we don't have in LandR,
   # we need to add them
@@ -198,8 +198,8 @@ createSpeciesStackLayer <- function(modelList,
     # here I need to "fill back up" or 'extend' my cohort data to the pixels that had biomass and don't have anymore
     # pixelsWithDataAtInitialization
     cohortDataZeroed <- data.table(matrix(0,
-      nrow = length(levels(cohortData$speciesCode)),
-      ncol = NCOL(cohortData)
+                                          nrow = length(levels(cohortData$speciesCode)),
+                                          ncol = NCOL(cohortData)
     ))
 
     names(cohortDataZeroed) <- names(cohortData)
@@ -248,7 +248,7 @@ createSpeciesStackLayer <- function(modelList,
       )
       joinOn <- c("speciesCode", "pixelGroup")
       newCohoVals <- valsCoho[subsCohort[, list(sumBiomass = sum(B)), by = joinOn],
-        on = "pixelGroup"
+                              on = "pixelGroup"
       ]
       zeroedMap[newCohoVals$pixelID] <- newCohoVals$sumBiomass
     }
@@ -296,7 +296,7 @@ createSpeciesStackLayer <- function(modelList,
         )
         joinOn <- c("speciesCode", "pixelGroup")
         cohortDataS <- valsCoho[subsCohort[, list(sumBiomass = sum(B)), by = joinOn],
-          on = "pixelGroup"
+                                on = "pixelGroup"
         ]
         return(cohortDataS)
       }))
@@ -304,14 +304,14 @@ createSpeciesStackLayer <- function(modelList,
       # 2. Use it as a "mask": Extract which pixels have information on biomass
       # i.e., not NA and > 0
       originalSpp <- Cache(loadStaticLayers,
-        fileURL = urlStaticLayers, # Add Cache when fun is ready
-        pathData = pathData,
-        studyArea = studyArea,
-        rasterToMatch = rasterToMatch,
-        Province = Province,
-        version = version,
-        allVariables = spLayerName,
-        staticLayersNames = spLayerName
+                           fileURL = urlStaticLayers, # Add Cache when fun is ready
+                           pathData = pathData,
+                           studyArea = studyArea,
+                           rasterToMatch = rasterToMatch,
+                           Province = Province,
+                           version = version,
+                           allVariables = spLayerName,
+                           staticLayersNames = spLayerName
       )
 
       originalSppPix <- data.table(
@@ -328,7 +328,7 @@ createSpeciesStackLayer <- function(modelList,
         value.var = "sumBiomass"
       )
       sppPixTbCohort <- merge(originalSppPix, cohortWide,
-        by = "pixelID", all.x = TRUE
+                              by = "pixelID", all.x = TRUE
       )
       # 4. Replace that value in the pixels of the mask to create Spp
       for (j in seq_len(ncol(sppPixTbCohort))) {
@@ -337,9 +337,9 @@ createSpeciesStackLayer <- function(modelList,
       sppPixTbCohort[, valReplace := do.call(what = pmax, .SD), .SDcols = toKeep]
       sppPixTbCohortReady <- sppPixTbCohort[, c("pixelID", "valReplace")]
       sppPixTbCohortReady <- merge(data.table(pixelID = 1:ncell(zeroedMap)),
-        sppPixTbCohortReady,
-        by = "pixelID",
-        all.x = TRUE
+                                   sppPixTbCohortReady,
+                                   by = "pixelID",
+                                   all.x = TRUE
       )
       setkey(sppPixTbCohortReady, "pixelID")
       zeroedMap <- setValues(
@@ -422,7 +422,6 @@ createSpeciesStackLayer <- function(modelList,
   # According to the paper, Knn unit is t/ha
 
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
   ###################### MAKE THE BIOMASS LAYER  ######################
   # Add simulated total biomass layer, if present
   biomassLayerName <- predictors[grepl(x = predictors, pattern = "Biomass")]
@@ -466,10 +465,10 @@ createSpeciesStackLayer <- function(modelList,
     }
     if (version %in% c(1:8, "6a")) {
       originalSpeciesLayers <- Cache(prepInputStack,
-        url = urlStaticLayer,
-        alsoExtract = "similar",
-        destinationPath = pathData,
-        to = rasterToMatch
+                                     url = urlStaticLayer,
+                                     alsoExtract = "similar",
+                                     destinationPath = pathData,
+                                     to = rasterToMatch
       )
       ## Ceres: not necessary anymore
       # originalSpeciesLayers <- rast(originalSpeciesLayers)
@@ -482,14 +481,14 @@ createSpeciesStackLayer <- function(modelList,
         ageLayerName
       )
       originalSpeciesLayers <- Cache(loadStaticLayers,
-        fileURL = urlStaticLayers, # Add Cache when fun is ready
-        pathData = pathData,
-        studyArea = studyArea,
-        rasterToMatch = rasterToMatch,
-        Province = Province,
-        version = version,
-        allVariables = laysNeeded,
-        staticLayersNames = laysNeeded
+                                     fileURL = urlStaticLayers, # Add Cache when fun is ready
+                                     pathData = pathData,
+                                     studyArea = studyArea,
+                                     rasterToMatch = rasterToMatch,
+                                     Province = Province,
+                                     version = version,
+                                     allVariables = laysNeeded,
+                                     staticLayersNames = laysNeeded
       )
     }
 
@@ -503,6 +502,7 @@ createSpeciesStackLayer <- function(modelList,
       original = match(names(speciesStack), names(originalSpeciesLayers))
     )
     matched <- split(matchedLays, seq(nrow(matchedLays)))
+
     speciesStack <- lapply(matched, FUN = function(matching) {
       if (names(speciesStack[[matching[["toMask"]]]]) != names(originalSpeciesLayers[[matching[["original"]]]])) {
         stop("The original species raster and the succession one don't match. Please debug it.")
@@ -566,14 +566,14 @@ createSpeciesStackLayer <- function(modelList,
   landcoverLayersNames <- predictors[grepl(x = predictors, pattern = "LandCover")]
 
   landcoverLayers <- Cache(loadStaticLayers,
-    fileURL = urlStaticLayers, # Add Cache when fun is ready
-    pathData = pathData,
-    studyArea = studyArea,
-    rasterToMatch = rasterToMatch,
-    Province = Province,
-    version = version,
-    allVariables = landcoverLayersNames,
-    staticLayersNames = landcoverLayersNames
+                           fileURL = urlStaticLayers, # Add Cache when fun is ready
+                           pathData = pathData,
+                           studyArea = studyArea,
+                           rasterToMatch = rasterToMatch,
+                           Province = Province,
+                           version = version,
+                           allVariables = landcoverLayersNames,
+                           staticLayersNames = landcoverLayersNames
   )
 
   ###################### MAKE THE LANDSCAPE LAYERS  ######################
@@ -594,49 +594,49 @@ createSpeciesStackLayer <- function(modelList,
   tic("Landscape layers elapsed time: ")
 
   landscapeLays <- lapply(spLaysForLandscape,
-    focalWeight = fw750,
-    function(lay, focalWeight) {
-      spAvailable <- grepl(pattern = lay, x = names(speciesRasters))
-      whichStkToUse <- "speciesRasters"
-      if (!any(spAvailable)) {
-        spAvailable <- grepl(pattern = lay, x = names(speciesStack))
-        whichStkToUse <- "speciesStack"
-      }
-      # The landscape layers and the individual species layers may not match
-      # If I have the layer for a given sp in the speciesStack, use it
-      if (any(spAvailable)) {
-        spRas <- get(whichStkToUse)[[names(get(whichStkToUse))[spAvailable]]]
-      } else {
-        ## Ceres:  changed to warning Abies_Bal is only appears as a landscape predictor
-        ## as is missing from `speciesRasters` and `speciesStack`
-        warning(paste(
-          lay, "is not available to build Landscape layer.",
-          "This should not happen. Somewhere there is a bug..."
-        ))
-        return(NULL)
-      }
-      # Ceres: the following doesnt seem to be applicable to the v8 model predictor names I have access to
-      # if (version %in% c(1:8, "6a")) {
-      #   nm <- paste0(
-      #     "Landsc750_",
-      #     paste(strsplit(x = lay, split = "_")[[1]][2:4],
-      #       collapse = "_"
-      #     )
-      #   )
-      # } else {
-        nm <- paste0("Landsc750_", lay)
-      # }
-      if (any(minmax(spRas)["min",] != 0, minmax(spRas)["max",] != 0)) {
-        # if we actually have data, calculate the focal
-        message(paste0("Calculating landscape gaussian filter for ", nm))
-        newR <- focal(spRas, w = focalWeight, na.rm = TRUE)
-      } else {
-        message(paste0(nm, " has no data. Adding a zeroed landscape map"))
-        newR <- spRas
-      }
-      names(newR) <- nm
-      return(newR)
-    }
+                          focalWeight = fw750,
+                          function(lay, focalWeight) {
+                            spAvailable <- grepl(pattern = lay, x = names(speciesRasters))
+                            whichStkToUse <- "speciesRasters"
+                            if (!any(spAvailable)) {
+                              spAvailable <- grepl(pattern = lay, x = names(speciesStack))
+                              whichStkToUse <- "speciesStack"
+                            }
+                            # The landscape layers and the individual species layers may not match
+                            # If I have the layer for a given sp in the speciesStack, use it
+                            if (any(spAvailable)) {
+                              spRas <- get(whichStkToUse)[[names(get(whichStkToUse))[spAvailable]]]
+                            } else {
+                              ## Ceres:  changed to warning Abies_Bal is only appears as a landscape predictor
+                              ## as is missing from `speciesRasters` and `speciesStack`
+                              warning(paste(
+                                lay, "is not available to build Landscape layer.",
+                                "This should not happen. Somewhere there is a bug..."
+                              ))
+                              return(NULL)
+                            }
+                            # Ceres: the following doesnt seem to be applicable to the v8 model predictor names I have access to
+                            # if (version %in% c(1:8, "6a")) {
+                            #   nm <- paste0(
+                            #     "Landsc750_",
+                            #     paste(strsplit(x = lay, split = "_")[[1]][2:4],
+                            #       collapse = "_"
+                            #     )
+                            #   )
+                            # } else {
+                            nm <- paste0("Landsc750_", lay)
+                            # }
+                            if (any(minmax(spRas)["min",] != 0, minmax(spRas)["max",] != 0)) {
+                              # if we actually have data, calculate the focal
+                              message(paste0("Calculating landscape gaussian filter for ", nm))
+                              newR <- focal(spRas, w = focalWeight, na.rm = TRUE)
+                            } else {
+                              message(paste0(nm, " has no data. Adding a zeroed landscape map"))
+                              newR <- spRas
+                            }
+                            names(newR) <- nm
+                            return(newR)
+                          }
   )
 
   landscapeLays <- rast(landscapeLays)

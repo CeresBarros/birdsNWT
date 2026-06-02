@@ -343,7 +343,7 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
             ## Ceres: workaround to allow empty layers when not running every year
             # stop("'useTestSpeciesLayers' is FALSE, but apparently no vegetation simulation was run.",
             #      " Check your inputs folder or simulation module.")
-            warning("No vegetation layers found for year", time(sim), ". Skipping veg layers.")
+            message("No vegetation layers found for year", time(sim), ". Skipping veg layers.")
             sim$successionLayers <- NULL
           } else {
 
