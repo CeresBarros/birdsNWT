@@ -43,9 +43,8 @@ loadStaticLayers <- function(fileURL,
       ras <- stack(file.path(pathData, lay))
       laysToKeep <- which(names(ras) %in% allVariables)
       rasRed <- raster::subset(x = ras, subset = laysToKeep, drop = TRUE)
-      stkPre <- Cache(reproducible::postProcess, x = rasRed,
-                      studyArea = studyArea,
-                      rasterToMatch = rasterToMatch,
+      stkPre <- Cache(postProcess, x = rasRed,
+                      to = rasterToMatch,
                       destinationPath = pathData)
     })
     # Rearrange the layers so that each variable becomes a raster stack
@@ -86,12 +85,13 @@ loadStaticLayers <- function(fileURL,
     # Browse[1]>
 
   } else {
-
-    stkPre <- reproducible::preProcess(url = fileURL,
-                                       alsoExtract = "similar",
-                                       destinationPath = pathData,
-                                       omitArgs = c("useCache", "purge")) |>
-      Cache()
+    stkPre <- preProcess(url = fileURL,
+                         alsoExtract = "similar",
+                         destinationPath = pathData,
+                         useCache = useCacheInternals,
+                         omitArgs = c("purge", "useCache")) |>
+      Cache(useCache = useCacheInternals,
+            omitArgs = c("purge", "useCache"))
 
     stk <- rast(stkPre$targetFilePath) # This file has all species too. Exclude those.
     stkNames <- names(stk)
@@ -101,11 +101,14 @@ loadStaticLayers <- function(fileURL,
 
     subStaticLayers <- stk[[fixedLayers]]
     staticLayers <- lapply(X = seq_len(nlyr(subStaticLayers)), FUN = function(layer){
-      lay <- postProcess(subStaticLayers[[layer]], cropTo = studyArea,
-                         to = rasterToMatch, destinationPath = pathData,
+      lay <- postProcess(subStaticLayers[[layer]],
+                         to = rasterToMatch,
+                         destinationPath = pathData,
+                         writeTo = NULL,
                          useCache = useCacheInternals,
-                         writeTo = NULL) |>
-        Cache(omitArgs = c("purge", "useCache"))
+                         omitArgs = c("purge", "useCache")) |>
+        Cache(useCache = useCacheInternals,
+              omitArgs = c("purge", "useCache"))
       return(lay)
     })
     staticLayers <- rast(staticLayers)

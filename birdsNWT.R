@@ -19,7 +19,7 @@ defineModule(sim, list(
   documentation = list("README.txt", "birdsNWT.Rmd"),
   reqdPkgs = list("archive", ## for large zip files
                   "googledrive", "magrittr", "data.table", "gbm",
-                  "SpaDES.core", "reproducible (>= 3.0.0.9001)", "terra",
+                  "SpaDES.core", "reproducible (>=3.1.1.9004)", "terra",
                   "PredictiveEcology/usefulFuns@birdResilienceMS (HEAD)", ## TODO: add pemisc for cluster fns
                   "future", "future.apply", "tictoc", "qs"), # "raster", "plyr", "dplyr", "crayon",
   parameters = rbind(
@@ -350,7 +350,8 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
             ## Ceres: workaround -- the output of postProcess(uplandsRaster, ...) in .inputsObject
             ## is not being properly recovered so we'll force the matching here:
             if (!compareGeom(sim$uplandsRaster, sim$rasterToMatch, stopOnError = FALSE)) {
-              sim$uplandsRaster <- postProcess(sim$uplandsRaster, to = sim$rasterToMatch)
+              sim$uplandsRaster <- postProcess(sim$uplandsRaster, to = sim$rasterToMatch) |>
+                Cache()
             }
 
             sim$successionLayers <- createSpeciesStackLayer(
@@ -375,7 +376,8 @@ doEvent.birdsNWT = function(sim, eventTime, eventType) {
               studyArea = sim$studyArea,
               # Province = strsplit(P(sim)$scenario, split = "_")[[1]][1]
               Province = "NT" ## Ceres: workaround
-            )
+            ) |>
+              Cache(omitArgs = c("pathData"))
           }
       }
 
